@@ -41,11 +41,26 @@ async def analyze_image(
 
     logger.info(f"analyze_image: analyzing image for session {session_id}")
 
+    # Load feedback summary to drive preference strength
+    session_count = 0
+    avg_satisfaction = 0.0
+    store = (config.get("configurable", {}) if config else {}).get("store")
+    if store:
+        try:
+            from agent_face.langgraph_brain.memory.feedback import get_user_feedback_summary
+            summary = await get_user_feedback_summary(store, user_id)
+            session_count = summary.get("total_sessions", 0)
+            avg_satisfaction = summary.get("avg_satisfaction", 0.0)
+        except Exception:
+            pass
+
     try:
         request = AnalysisRequest(
             image_b64=state["input_image_b64"],
             user_prompt=state.get("user_prompt"),
             user_preferences=state.get("user_preferences"),
+            session_count=session_count,
+            avg_satisfaction=avg_satisfaction,
         )
 
         response = await bridge.analyze_image(

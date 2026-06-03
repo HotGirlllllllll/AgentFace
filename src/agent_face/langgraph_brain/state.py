@@ -59,6 +59,7 @@ class AnalysisResult(TypedDict):
     skin_condition: str  # e.g., "好", "有痘痘", "有斑点", "毛孔粗大"
     detected_features: list[str]  # e.g., ["双眼皮", "圆脸", "高鼻梁"]
     detected_issues: list[str]  # e.g., ["黑眼圈", "痘痘", "色斑"]
+    lighting: str  # e.g., "自然光", "暖光", "冷光", "暗光", "强光"
     suggested_params: BeautifyParams
     reasoning: str  # Human-readable explanation of the suggested params
     confidence: float  # 0.0 - 1.0

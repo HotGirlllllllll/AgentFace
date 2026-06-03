@@ -535,6 +535,7 @@ function showAnalysis(data) {
   $('#analysisCard').innerHTML=`
     <div class="kv"><span class="k">肤色</span><span class="v">${ar.skin_tone||'—'}</span></div>
     <div class="kv"><span class="k">皮肤</span><span class="v">${ar.skin_condition||'—'}</span></div>
+    <div class="kv"><span class="k">光线</span><span class="v">${ar.lighting||'—'}</span></div>
     <div class="kv"><span class="k">特征</span><span class="v">${ar.detected_features?.join('、')||'无'}</span></div>
     <div class="kv"><span class="k">问题</span><span class="v">${ar.detected_issues?.join('、')||'无'}
       ${!ar.detected_issues?.length?'<span class="tag tag-ok">良好</span>':''}</span></div>

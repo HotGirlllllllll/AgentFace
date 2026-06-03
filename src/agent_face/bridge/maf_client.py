@@ -83,6 +83,8 @@ class MAFBridgeClient:
             preferences=request.user_preferences,
             user_id=user_id,
             session_id=session_id,
+            session_count=request.session_count,
+            avg_satisfaction=request.avg_satisfaction,
         )
 
         if not task_result.success:

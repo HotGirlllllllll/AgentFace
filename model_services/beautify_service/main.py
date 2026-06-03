@@ -14,6 +14,13 @@ Input: image_b64 (base64) + description (natural language)
 Output: image_b64 (base64) — the beautified image
 """
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+_env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+load_dotenv(_env_path)
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional

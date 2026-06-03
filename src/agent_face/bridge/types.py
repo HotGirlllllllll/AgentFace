@@ -18,6 +18,8 @@ class AnalysisRequest:
     image_b64: str
     user_prompt: Optional[str] = None
     user_preferences: Optional[BeautifyParams] = None
+    session_count: int = 0
+    avg_satisfaction: float = 0.0
 
 
 @dataclass

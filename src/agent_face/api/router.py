@@ -65,6 +65,7 @@ def _format_session_response(state: dict) -> SessionResponse:
         analysis_model = AnalysisResultModel(
             skin_tone=analysis.get("skin_tone", ""),
             skin_condition=analysis.get("skin_condition", ""),
+            lighting=analysis.get("lighting", "—"),
             detected_features=analysis.get("detected_features", []),
             detected_issues=analysis.get("detected_issues", []),
             suggested_params=BeautifyParamsModel(

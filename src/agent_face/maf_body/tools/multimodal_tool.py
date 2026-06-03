@@ -57,22 +57,15 @@ class MultimodalMCPTool:
         image_b64: str,
         prompt: Optional[str] = None,
         preferences: Optional[BeautifyParams] = None,
+        session_count: int = 0,
+        avg_satisfaction: float = 0.0,
     ) -> AnalysisResult:
-        """
-        Execute the tool — calls the multimodal model.
-
-        Args:
-            image_b64: Base64-encoded facial image.
-            prompt: Optional instruction.
-            preferences: Optional user aesthetic preferences.
-
-        Returns:
-            AnalysisResult with detection and suggestion data.
-        """
         return await self._client.analyze(
             image_b64=image_b64,
             prompt=prompt,
             preferences=preferences,
+            session_count=session_count,
+            avg_satisfaction=avg_satisfaction,
         )
 
     async def health_check(self) -> dict:

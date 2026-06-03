@@ -75,10 +75,10 @@ async def receive_input(
     if image_b64.startswith("data:"):
         image_b64 = image_b64.split(",", 1)[-1]
 
-    # 5. Initialize session metadata if not set
+    # 6. Initialize session metadata if not set
     created_at = state.get("created_at") or datetime.now(timezone.utc).isoformat()
 
-    logger.info(f"receive_input: validation passed for session {session_id}")
+    logger.info(f"receive_input: ready for session {session_id} ({len(image_b64)} chars base64)")
 
     return {
         "input_image_b64": image_b64,

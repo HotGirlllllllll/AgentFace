@@ -34,6 +34,7 @@ class AnalysisResultModel(BaseModel):
 
     skin_tone: str = Field(description="肤色分析")
     skin_condition: str = Field(description="皮肤状况")
+    lighting: str = Field(default="—", description="光线状况")
     detected_features: list[str] = Field(default_factory=list, description="检测到的面部特征")
     detected_issues: list[str] = Field(default_factory=list, description="检测到的皮肤问题")
     suggested_params: BeautifyParamsModel = Field(description="建议的美颜参数")

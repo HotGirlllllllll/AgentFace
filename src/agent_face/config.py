@@ -16,8 +16,20 @@ class Settings(BaseSettings):
 
     # ── Model Services ──
     multimodal_model_url: str = "http://localhost:8001"
-    beautify_model_url: str = "http://localhost:8002"
-    model_request_timeout: float = 60.0
+    beautify_model_url: str = "http://localhost:8899"
+    model_request_timeout: float = 180.0
+
+    # ── Beautification Model ──
+    beauty_model_name: str = "deepfrr"     # deepfrr or ffhqr
+    beauty_steps: int = 30                 # inference steps (higher = better, slower)
+    beauty_guidance_scale: float = 3.0     # text guidance strength
+    beauty_image_guidance_scale: float = 1.5  # original image preservation
+    beauty_seed: int = 42
+
+    # ── MIMO API ──
+    mimo_api_key: str = ""
+    mimo_base_url: str = "https://token-plan-cn.xiaomimimo.com/v1"
+    mimo_model: str = "mimo-v2-omni"
 
     # ── Server ──
     host: str = "0.0.0.0"

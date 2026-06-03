@@ -84,6 +84,8 @@ class MAFOrchestrator:
         preferences: Optional[BeautifyParams] = None,
         user_id: str = "anonymous",
         session_id: str = "unknown",
+        session_count: int = 0,
+        avg_satisfaction: float = 0.0,
     ) -> MAFTaskResult:
         """
         Delegate a facial analysis task.
@@ -137,6 +139,8 @@ class MAFOrchestrator:
                     image_b64=data["image_b64"],
                     prompt=data.get("prompt"),
                     preferences=data.get("preferences"),
+                    session_count=session_count,
+                    avg_satisfaction=avg_satisfaction,
                 )
                 return {"analysis_result": result}
 

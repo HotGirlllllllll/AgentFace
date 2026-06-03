@@ -13,7 +13,14 @@ MIMO model: mimo-v2-omni (vision-capable multimodal model)
 import os
 import json
 import logging
+from pathlib import Path
 from typing import Optional
+
+from dotenv import load_dotenv
+
+# Load .env from project root
+_env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+load_dotenv(_env_path)
 
 import httpx
 from fastapi import FastAPI
@@ -22,16 +29,14 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Multimodal Model Service - MIMO", version="1.0.0")
+app = FastAPI(title="Multimodal Model Service", version="2.0.0")
 
-# ── MIMO API Config ────────────────────────────────────────────
+# ── Model API Config ──────────────────────────────────────────
+# Supports any OpenAI-compatible API (MIMO, vLLM, local server, etc.)
 
-MIMO_API_KEY = os.getenv("MIMO_API_KEY", "")
-MIMO_BASE_URL = os.getenv(
-    "MIMO_BASE_URL",
-    "https://token-plan-cn.xiaomimimo.com/v1",
-)
-MIMO_MODEL = os.getenv("MIMO_MODEL", "mimo-v2-omni")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "no")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://210.38.72.13:8000/v1")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemma-4-31b-it-ms")
 
 # ── Request/Response Models ────────────────────────────────────
 
@@ -161,13 +166,13 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.post(
-            f"{MIMO_BASE_URL}/chat/completions",
+            f"{LLM_BASE_URL}/chat/completions",
             headers={
-                "Authorization": f"Bearer {MIMO_API_KEY}",
+                "Authorization": f"Bearer {LLM_API_KEY}",
                 "Content-Type": "application/json",
             },
             json={
-                "model": MIMO_MODEL,
+                "model": LLM_MODEL,
                 "messages": messages,
                 "max_tokens": 4096,
                 "temperature": 0.3,
@@ -176,7 +181,7 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
 
         if response.status_code != 200:
             logger.error(f"MIMO API error: {response.status_code} {response.text}")
-            raise ValueError(f"MIMO API returned {response.status_code}: {response.text}")
+            raise ValueError(f"LLM API returned {response.status_code}: {response.text}")
 
         data = response.json()
         content = data["choices"][0]["message"]["content"]
@@ -186,24 +191,38 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     # Parse JSON from response (handle markdown code blocks)
     parsed = _parse_analysis_json(content)
 
+    is_face = parsed.get("is_face", False)
+    sp = parsed.get("suggested_params") or {}  # handle null/None
+
+    if not is_face:
+        return AnalyzeResponse(
+            skin_tone="—",
+            skin_condition="—",
+            detected_features=[],
+            detected_issues=["未检测到人脸"],
+            suggested_params=SuggestedParams(),  # all zeros
+            reasoning=parsed.get("reasoning", "未检测到清晰人脸，请上传人像照片"),
+            confidence=0.0,
+        )
+
     return AnalyzeResponse(
-        skin_tone=parsed.get("skin_tone", "—") if parsed.get("is_face", True) else "—",
-        skin_condition=parsed.get("skin_condition", "—") if parsed.get("is_face", True) else "—",
-        detected_features=parsed.get("detected_features", []) if parsed.get("is_face", True) else [],
-        detected_issues=parsed.get("detected_issues", []) if parsed.get("is_face", True) else ["未检测到人脸"],
+        skin_tone=parsed.get("skin_tone", "—"),
+        skin_condition=parsed.get("skin_condition", "—"),
+        detected_features=parsed.get("detected_features", []),
+        detected_issues=parsed.get("detected_issues", []),
         suggested_params=SuggestedParams(
-            skin_smoothing=parsed.get("suggested_params", {}).get("skin_smoothing", 0.0) if parsed.get("is_face", True) else 0.0,
-            whitening=parsed.get("suggested_params", {}).get("whitening", 0.0) if parsed.get("is_face", True) else 0.0,
-            eye_enlargement=parsed.get("suggested_params", {}).get("eye_enlargement", 0.0) if parsed.get("is_face", True) else 0.0,
-            face_slimming=parsed.get("suggested_params", {}).get("face_slimming", 0.0) if parsed.get("is_face", True) else 0.0,
-            blush=parsed.get("suggested_params", {}).get("blush", 0.0) if parsed.get("is_face", True) else 0.0,
-            lip_color_adjustment=parsed.get("suggested_params", {}).get("lip_color_adjustment", 0.0) if parsed.get("is_face", True) else 0.0,
-            blemish_removal=parsed.get("suggested_params", {}).get("blemish_removal", 0.0) if parsed.get("is_face", True) else 0.0,
-            nose_reshaping=parsed.get("suggested_params", {}).get("nose_reshaping", 0.0) if parsed.get("is_face", True) else 0.0,
-            eyebrow_adjustment=parsed.get("suggested_params", {}).get("eyebrow_adjustment", 0.0) if parsed.get("is_face", True) else 0.0,
+            skin_smoothing=sp.get("skin_smoothing", 2.0),
+            whitening=sp.get("whitening", 1.0),
+            eye_enlargement=sp.get("eye_enlargement", 1.5),
+            face_slimming=sp.get("face_slimming", 1.0),
+            blush=sp.get("blush", 1.0),
+            lip_color_adjustment=sp.get("lip_color_adjustment", 1.0),
+            blemish_removal=sp.get("blemish_removal", 3.0),
+            nose_reshaping=sp.get("nose_reshaping", 0.5),
+            eyebrow_adjustment=sp.get("eyebrow_adjustment", 1.0),
         ),
-        reasoning=parsed.get("reasoning", "未检测到清晰人脸，请上传人像照片"),
-        confidence=parsed.get("is_face", True) and parsed.get("confidence", 0.0) or 0.0,
+        reasoning=parsed.get("reasoning", ""),
+        confidence=parsed.get("confidence", 0.5),
     )
 
 
@@ -213,8 +232,8 @@ async def health():
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(
-                f"{MIMO_BASE_URL}/models",
-                headers={"Authorization": f"Bearer {MIMO_API_KEY}"},
+                f"{LLM_BASE_URL}/models",
+                headers={"Authorization": f"Bearer {LLM_API_KEY}"},
             )
             return {"status": "ok", "mimo_api": resp.status_code == 200}
     except Exception as e:
