@@ -15,10 +15,8 @@
 
 <!-- DEMO_VIDEO_SLOT_START -->
 <div align="center">
-  <p>
-    <img src="https://img.shields.io/badge/Demo%20Video-Coming%20Soon-f2a15d?style=for-the-badge" alt="Demo Video Coming Soon" />
-  </p>
-  <p>这里预留给你的演示视频。后续可以直接替换成 GitHub 视频、GIF，或封面图加跳转链接。</p>
+  <img src="assets/demo/agentface-demo.gif" alt="AgentFace Demo" />
+  <p>20 秒演示片段：从工作台进入，到上传素材、参数工作流与结果展示。</p>
 </div>
 <!-- DEMO_VIDEO_SLOT_END -->
 
